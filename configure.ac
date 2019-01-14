@@ -4,13 +4,19 @@
 AC_PREREQ(2.61)
 AC_INIT([wut-tools],[1.0.0],[https://github.com/switchbrew/switch-tools/issues])
 AC_CONFIG_SRCDIR([src/elf2rpl/main.cpp])
+AC_CONFIG_MACRO_DIRS([m4])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
+# Checks for programs.
 AC_PROG_CXX
+AC_PROG_INSTALL
+AC_CANONICAL_HOST
+AC_CANONICAL_BUILD
+AC_PROG_LIBTOOL
 
 AC_SYS_LARGEFILE
 

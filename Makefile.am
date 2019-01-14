@@ -1,4 +1,5 @@
 # Makefile.am -- Process this file with automake to produce Makefile.in
+ACLOCAL_AMFLAGS = -I m4
 
 common_CPPFLAGS = -I$(top_srcdir)/src/common
 excmd_CPPFLAGS = -I${top_srcdir}/libraries/excmd/src
@@ -10,7 +11,12 @@ excmd_files = libraries/excmd/src/excmd_exception.h  \
 	libraries/excmd/src/excmd_str.h  \
 	libraries/excmd/src/excmd_value_parser.h
 
-fmt_files = libraries/fmt/include/fmt/core.h  \
+
+bin_PROGRAMS = elf2rpl readrpl rplexportgen rplimportgen udplogserver
+
+noinst_LTLIBRARIES      = libfmt.la
+
+libfmt_la_SOURCES = libraries/fmt/include/fmt/core.h  \
 	libraries/fmt/include/fmt/format.h  \
 	libraries/fmt/include/fmt/format-inl.h  \
 	libraries/fmt/include/fmt/ostream.h \
@@ -21,22 +27,21 @@ fmt_files = libraries/fmt/include/fmt/core.h  \
 	libraries/fmt/src/format.cc \
 	libraries/fmt/src/posix.cc
 
+libfmt_la_CPPFLAGS	= $(fmt_CPPFLAGS)
 
-bin_PROGRAMS = elf2rpl readrpl rplexportgen rplimportgen udplogserver
-
-elf2rpl_SOURCES	= $(excmd_files) $(fmt_files) src/elf2rpl/main.cpp
+elf2rpl_SOURCES	= $(excmd_files) src/elf2rpl/main.cpp
 
 elf2rpl_CPPFLAGS = @ZLIB_CFLAGS@ $(common_CPPFLAGS) ${excmd_CPPFLAGS} ${fmt_CPPFLAGS}
-elf2rpl_LDADD = @ZLIB_LIBS@
+elf2rpl_LDADD = libfmt.la @ZLIB_LIBS@
 
-readrpl_SOURCES = $(fmt_files) src/readrpl/generate_exports_def.cpp  \
+readrpl_SOURCES = src/readrpl/generate_exports_def.cpp  \
 	src/readrpl/generate_exports_def.h  \
 	src/readrpl/main.cpp  src/readrpl/print.cpp  \
 	src/readrpl/print.h  src/readrpl/readrpl.h  \
 	src/readrpl/verify.cpp src/readrpl/verify.h
 
 readrpl_CPPFLAGS = @ZLIB_CFLAGS@ $(common_CPPFLAGS) ${excmd_CPPFLAGS} ${fmt_CPPFLAGS}
-readrpl_LDADD = @ZLIB_LIBS@
+readrpl_LDADD = libfmt.la @ZLIB_LIBS@
 
 rplexportgen_SOURCES = src/rplexportgen/rplexportgen.cpp
 
