@@ -1,0 +1,9 @@
+[submodule "libraries/fmt"]
+	path = libraries/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "libraries/excmd"]
+	path = libraries/excmd
+	url = https://github.com/exjam/excmd.git
+[submodule "libraries/zlib"]
+	path = libraries/zlib
+	url = https://github.com/madler/zlib.git
