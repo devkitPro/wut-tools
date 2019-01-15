@@ -56,4 +56,4 @@ rplimportgen_LDADD = @ZLIB_LIBS@
 udplogserver_SOURCES = src/udplogserver/main.cpp
 udplogserver_LDADD = @NET_LIBS@
 
-EXTRA_DIST = autogen.sh src/common/be_val.h  src/common/elf.h  src/common/type_traits.h  src/common/utils.h
+EXTRA_DIST = autogen.sh src/common/be_val.h  src/common/elf.h  src/common/type_traits.h  src/common/utils.h LICENSE.md
