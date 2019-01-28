@@ -4,7 +4,7 @@
 AC_PREREQ(2.61)
 AC_INIT([wut-tools],[1.0.0],[https://github.com/devkitPro/wut-tools/issues])
 AC_CONFIG_SRCDIR([src/elf2rpl/main.cpp])
-AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
@@ -20,7 +20,7 @@ AC_PROG_LIBTOOL
 
 AC_SYS_LARGEFILE
 
-AX_CXX_COMPILE_STDCXX_14
+AX_CXX_COMPILE_STDCXX_14(noext, mandatory)
 
 PKG_CHECK_MODULES([ZLIB], zlib, [
   AC_DEFINE([HAVE_LIBZ], [1], [Define if using zlib.])
