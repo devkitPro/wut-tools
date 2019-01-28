@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/devkitPro/wut-tools.svg?branch=master)](https://travis-ci.org/devkitPro/wut-tools)
 # wut-tools
 Tools for [wut](https://github.com/devkitPro/wut).
 
