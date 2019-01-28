@@ -5,21 +5,8 @@ matrix:
     - os: linux
       dist: xenial
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - sourceline: 'ppa:cginternals/backports-ppa'
-    packages:
-      - g++-7
-      - gcc-7
-
 git:
   submodules: true
-
-install:
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90
 
 script:
   - cd "$TRAVIS_BUILD_DIR"
