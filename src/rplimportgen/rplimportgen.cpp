@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "rplwrap.h"
 
 #include <array>
 #include <algorithm>
@@ -17,7 +18,9 @@ enum class ReadMode
 {
    INVALID,
    TEXT,
-   DATA
+   TEXT_WRAP,
+   DATA,
+   DATA_WRAP,
 };
 
 void
@@ -122,8 +125,12 @@ int main(int argc, char **argv)
          if (line[0] == ':') {
             if (line.substr(1) == "TEXT") {
                readMode = ReadMode::TEXT;
+            } else if (line.substr(1) == "TEXT_WRAP") {
+               readMode = ReadMode::TEXT_WRAP;
             } else if (line.substr(1) == "DATA") {
                readMode = ReadMode::DATA;
+            } else if (line.substr(1) == "DATA_WRAP") {
+               readMode = ReadMode::DATA_WRAP;
             } else if (line.substr(1, 4) == "NAME") {
                moduleName = line.substr(6);
             } else {
@@ -135,8 +142,12 @@ int main(int argc, char **argv)
 
          if (readMode == ReadMode::TEXT) {
             funcExports.push_back(line);
+         } else if (readMode == ReadMode::TEXT_WRAP) {
+            funcExports.push_back(std::string(RPLWRAP_PREFIX) + line);
          } else if (readMode == ReadMode::DATA) {
             dataExports.push_back(line);
+         } else if (readMode == ReadMode::DATA_WRAP) {
+            dataExports.push_back(std::string(RPLWRAP_PREFIX) + line);
          } else {
             std::cout << "Unexpected section data" << std::endl;
             return -1;
