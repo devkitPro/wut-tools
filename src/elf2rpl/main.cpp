@@ -530,8 +530,10 @@ renameRplWrap(ElfFile &file)
             if (wrapNameBase == symName) {
                // both __rplwrap_<name> and <name> exist, we can just swap their
                // name pointers
+#ifdef DEBUG
                fmt::print("DEBUG: renameRplWrap: {} <-> {}\n",
                   wrapName, symName);
+#endif //DEBUG
                std::swap((*rplWrap)->name, symbols[i].name);
                // We're done, remove symbol from foundRplWraps
                rplWrap = foundRplWraps.erase(rplWrap);
@@ -544,9 +546,11 @@ renameRplWrap(ElfFile &file)
       // symbols to <name>
 
       for (auto symbol : foundRplWraps) {
+#ifdef DEBUG
          fmt::print("DEBUG: renameRplWrap: {} -> {}\n",
             std::string(&strtabd[symbol->name]),
             std::string(&strtabd[symbol->name] + rplwrap_prefix.length()));
+#endif //DEBUG
          symbol->name += rplwrap_prefix.length();
       }
    }
