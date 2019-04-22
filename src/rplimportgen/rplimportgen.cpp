@@ -29,34 +29,6 @@ writeExports(std::ofstream &out,
              bool isData,
              const std::vector<std::string> &exports)
 {
-   // Align module name up to 8 bytes
-   auto moduleNameSize = (moduleName.length() + 1 + 7) & ~7;
-
-   // Calculate the data block size
-   auto exportSecSize = exports.size() * 8;
-
-   if (exportSecSize < moduleNameSize) {
-      exportSecSize = moduleNameSize;
-   }
-
-   // Calculate export hash
-   uint32_t exportsHash = crc32(0, Z_NULL, 0);
-
-   for (auto &exp : exports) {
-      exportsHash = crc32(exportsHash, reinterpret_cast<const Bytef *>(exp.data()), exp.size() + 1);
-   }
-
-   std::array<Bytef, 0xE> extraHashBytes;
-   extraHashBytes.fill(0);
-   exportsHash = crc32(exportsHash, extraHashBytes.data(), extraHashBytes.size());
-
-   // Setup section data
-   std::vector<uint32_t> secData;
-   secData.resize(exportSecSize / 4, 0);
-   memcpy(secData.data(), moduleName.c_str(), moduleName.length());
-
-   out << std::endl;
-
    if (isData) {
       out << ".section .dimport_" << moduleName << ", \"a\", @0x80000002" << std::endl;
    } else {
@@ -66,21 +38,43 @@ writeExports(std::ofstream &out,
    out << ".align 4" << std::endl;
    out << std::endl;
 
-   out << ".long " << exports.size() << std::endl;
-   out << ".long 0x" << std::hex << exportsHash << std::endl;
+   // Usually the symbol count, but isn't checked on hardware.
+   // Spoofed to allow ld to garbage-collect later.
+   out << ".long 1" << std::endl;
+   // Supposed to be a crc32 of the imports. Again, not actually checked.
+   out << ".long 0x00000000" << std::endl;
+   out << std::endl;
+
+   // Align module name up to 8 bytes
+   auto moduleNameSize = (moduleName.length() + 1 + 7) & ~7;
+
+   // Setup name data
+   std::vector<uint32_t> secData;
+   secData.resize(moduleNameSize / 4, 0);
+   memcpy(secData.data(), moduleName.c_str(), moduleName.length());
+
+   // Add name data
+   for (uint32_t data : secData) {
+      out << ".long 0x" << std::hex << byte_swap(data) << std::endl;
+   }
    out << std::endl;
 
    const char *type = isData ? "@object" : "@function";
 
-   for (auto i = 0; i < exportSecSize / 8; ++i) {
+   for (auto i = 0; i < exports.size(); ++i) {
       if (i < exports.size()) {
+         // Basically do -ffunction-sections
+         if (isData) {
+            out << ".section .dimport_" << moduleName << "." << exports[i] << ", \"a\", @0x80000002" << std::endl;
+         } else {
+            out << ".section .fimport_" << moduleName << "." << exports[i] << ", \"ax\", @0x80000002" << std::endl;
+         }
          out << ".global " << exports[i] << std::endl;
          out << ".type " << exports[i] << ", " << type << std::endl;
          out << exports[i] << ":" << std::endl;
       }
-
-      out << ".long 0x" << std::hex << byte_swap(secData[i * 2 + 0]) << std::endl;
-      out << ".long 0x" << std::hex << byte_swap(secData[i * 2 + 1]) << std::endl;
+      out << ".long 0x0" << std::endl;
+      out << ".long 0x0" << std::endl;
       out << std::endl;
    }
 }
