@@ -1,5 +1,6 @@
 #include "elf.h"
 #include "utils.h"
+#include "rplwrap.h"
 
 #include <algorithm>
 #include <excmd.h>
@@ -463,6 +464,99 @@ relocateSection(ElfFile &file,
    return true;
 }
 
+const static std::string rplwrap_prefix(RPLWRAP_PREFIX);
+
+/**
+ * Rename __rplwrap_<name> to <name>, and if <name> already exists rename it to
+ * __rplwrap_<name>.
+ *
+ * This is useful in situations where the imported libraries have names that
+ * conflict with existing ones.
+ */
+static bool
+renameRplWrap(ElfFile &file)
+{
+   auto strtabIndex = getSectionIndex(file, ".strtab");
+   if (strtabIndex < 0) return false;
+   auto& strtab = file.sections[strtabIndex];
+   auto strtabd = reinterpret_cast<char *>(strtab->data.data());
+
+   for (auto &symSection : file.sections) {
+      if (symSection->header.type != elf::SectionType::SHT_SYMTAB) {
+         continue;
+      }
+
+      auto symbols = reinterpret_cast<elf::Symbol *>(symSection->data.data());
+      auto numSymbols = symSection->data.size() / sizeof(elf::Symbol);
+
+      // First pass - find all the symbols prefixed with __rplwrap_, don't do
+      // anything yet
+      std::vector<elf::Symbol*> foundRplWraps;
+
+      for (auto i = 0u; i < numSymbols; ++i) {
+         auto type = symbols[i].info & 0xf;
+
+         // Only rename functions, data
+         if (type != elf::STT_OBJECT &&
+             type != elf::STT_FUNC) {
+            continue;
+         }
+
+         std::string name = &strtabd[symbols[i].name];
+         if (!name.compare(0, rplwrap_prefix.size(), rplwrap_prefix)) {
+            foundRplWraps.push_back(&symbols[i]);
+         }
+      }
+
+      // Second pass - Find any symbols that would conflict if __rplwrap_<name>
+      // got renamed to <name>, and if so, swap the names
+
+      for (auto i = 0u; i < numSymbols; ++i) {
+         auto type = symbols[i].info & 0xf;
+         std::string symName = &strtabd[symbols[i].name];
+
+         // Only rename functions, data
+         if (type != elf::STT_OBJECT &&
+             type != elf::STT_FUNC) {
+            continue;
+         }
+
+         auto rplWrap = foundRplWraps.begin();
+         while (rplWrap != foundRplWraps.end()) {
+            std::string wrapName = &strtabd[(*rplWrap)->name];
+            // Get the <name> part of __rplwrap_<name>
+            std::string wrapNameBase = wrapName.substr(rplwrap_prefix.size());
+
+            if (wrapNameBase == symName) {
+               // both __rplwrap_<name> and <name> exist, we can just swap their
+               // name pointers
+#ifdef DEBUG
+               fmt::print("DEBUG: renameRplWrap: {} <-> {}\n",
+                  wrapName, symName);
+#endif //DEBUG
+               std::swap((*rplWrap)->name, symbols[i].name);
+               // We're done, remove symbol from foundRplWraps
+               rplWrap = foundRplWraps.erase(rplWrap);
+            // Otherwise, increment the iterator and go around again
+            } else ++rplWrap;
+         }
+      }
+
+      // Final pass: rename any remaining (non-conflicting) __rplwrap_<name>
+      // symbols to <name>
+
+      for (auto symbol : foundRplWraps) {
+#ifdef DEBUG
+         fmt::print("DEBUG: renameRplWrap: {} -> {}\n",
+            std::string(&strtabd[symbol->name]),
+            std::string(&strtabd[symbol->name] + rplwrap_prefix.length()));
+#endif //DEBUG
+         symbol->name += rplwrap_prefix.length();
+      }
+   }
+
+   return true;
+}
 
 /**
  * Fix the loader virtual addresses.
@@ -793,6 +887,11 @@ int main(int argc, char **argv)
    if (!fixRelocations(elf)) {
       fmt::print("ERROR: fixRelocations failed.\n");
       return -1;
+   }
+
+   if (!renameRplWrap(elf)) {
+       fmt::print("ERROR: renameRplWrap failed.\n");
+       return -1;
    }
 
    if (!fixLoaderVirtualAddresses(elf)) {
