@@ -551,7 +551,7 @@ renameRplWrap(ElfFile &file)
             std::string(&strtabd[symbol->name]),
             std::string(&strtabd[symbol->name] + rplwrap_prefix.length()));
 #endif //DEBUG
-         symbol->name += rplwrap_prefix.length();
+         symbol->name += (uint32_t)rplwrap_prefix.length();
       }
    }
 
