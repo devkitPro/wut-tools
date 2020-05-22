@@ -27,7 +27,8 @@ void
 writeExports(std::ofstream &out,
              const std::string &moduleName,
              bool isData,
-             const std::vector<std::string> &exports)
+             const std::vector<std::string> &exports,
+             bool forceSingleSection)
 {
    if (isData) {
       out << ".section .dimport_" << moduleName << ", \"a\", @0x80000002" << std::endl;
@@ -63,12 +64,21 @@ writeExports(std::ofstream &out,
 
    for (auto i = 0; i < exports.size(); ++i) {
       if (i < exports.size()) {
-         // Basically do -ffunction-sections
-         if (isData) {
-            out << ".section .dimport_" << moduleName << "." << exports[i] << ", \"a\", @0x80000002" << std::endl;
-         } else {
-            out << ".section .fimport_" << moduleName << "." << exports[i] << ", \"ax\", @0x80000002" << std::endl;
+         if(forceSingleSection){
+             if (isData) {
+                out << ".section .dimport_" << moduleName << ", \"a\", @0x80000002" << std::endl;
+             } else {
+                out << ".section .fimport_" << moduleName << ", \"ax\", @0x80000002" << std::endl;
+             }
+         }else{
+             // Basically do -ffunction-sections
+             if (isData) {
+                out << ".section .dimport_" << moduleName << "." << exports[i] << ", \"a\", @0x80000002" << std::endl;
+             } else {
+                out << ".section .fimport_" << moduleName << "." << exports[i] << ", \"ax\", @0x80000002" << std::endl;
+             }
          }
+            
          out << ".global " << exports[i] << std::endl;
          out << ".type " << exports[i] << ", " << type << std::endl;
          out << exports[i] << ":" << std::endl;
@@ -84,10 +94,16 @@ int main(int argc, char **argv)
    std::string moduleName;
    std::vector<std::string> funcExports, dataExports;
    ReadMode readMode = ReadMode::INVALID;
+   bool forceSingleSection = false;
 
    if (argc < 3) {
       std::cout << argv[0] << " <exports.def> <output.S>" << std::endl;
       return 0;
+   }
+   if(argc == 4){
+       if(std::string(argv[3]).compare("--forceSingleSection") == 0){
+           forceSingleSection = true;
+       }
    }
 
    {
@@ -159,11 +175,11 @@ int main(int argc, char **argv)
       }
 
       if (funcExports.size() > 0) {
-         writeExports(out, moduleName, false, funcExports);
+         writeExports(out, moduleName, false, funcExports, forceSingleSection);
       }
 
       if (dataExports.size() > 0) {
-         writeExports(out, moduleName, true, dataExports);
+         writeExports(out, moduleName, true, dataExports, forceSingleSection);
       }
    }
 
