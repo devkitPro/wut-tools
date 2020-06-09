@@ -33,7 +33,8 @@ enum class ReadMode
 {
    INVALID,
    TEXT,
-   DATA
+   DATA,
+   NAME
 };
 
 void
@@ -126,6 +127,8 @@ int main(int argc, char **argv)
                readMode = ReadMode::TEXT;
             } else if (line.substr(1) == "DATA") {
                readMode = ReadMode::DATA;
+            } else if (line.substr(1, 4) == "NAME") {
+               readMode = ReadMode::NAME;
             } else {
                std::cout << "Unexpected section type" << std::endl;
                return -1;
@@ -137,6 +140,8 @@ int main(int argc, char **argv)
             funcExports.push_back(line);
          } else if (readMode == ReadMode::DATA) {
             dataExports.push_back(line);
+         } else if (readMode == ReadMode::NAME) {
+            // We can ignore name in rplexportgen
          } else {
             std::cout << "Unexpected section data" << std::endl;
             return -1;

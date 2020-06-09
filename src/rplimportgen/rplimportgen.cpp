@@ -23,7 +23,7 @@ enum class ReadMode
    DATA_WRAP,
 };
 
-void
+static void
 writeExports(std::ofstream &out,
              const std::string &moduleName,
              bool isData,
@@ -79,14 +79,32 @@ writeExports(std::ofstream &out,
    }
 }
 
-int main(int argc, char **argv)
+static void
+writeLinkerScript(std::ofstream &out,
+                  const std::string &name)
+{
+   out << "SECTIONS" << std::endl;
+   out << "{" << std::endl;
+   out << "   .fimport_" << name << " ALIGN(16) : {" << std::endl;
+   out << "      KEEP ( *(.fimport_"  << name << ") )" << std::endl;
+   out << "      *(.fimport_"  << name << ".*)" << std::endl;
+   out << "   } > loadmem" << std::endl;
+   out << "   .dimport_"  << name << " ALIGN(16) : {" << std::endl;
+   out << "      KEEP ( *(.dimport_"  << name << ") )" << std::endl;
+   out << "      *(.dimport_"  << name << ".*)" << std::endl;
+   out << "   } > loadmem" << std::endl;
+   out << "}" << std::endl;
+}
+
+int
+main(int argc, char **argv)
 {
    std::string moduleName;
    std::vector<std::string> funcExports, dataExports;
    ReadMode readMode = ReadMode::INVALID;
 
    if (argc < 3) {
-      std::cout << argv[0] << " <exports.def> <output.S>" << std::endl;
+      std::cout << argv[0] << " <exports.def> <output.S> [<output.ld>]" << std::endl;
       return 0;
    }
 
@@ -165,6 +183,18 @@ int main(int argc, char **argv)
       if (dataExports.size() > 0) {
          writeExports(out, moduleName, true, dataExports);
       }
+   }
+
+   if (argc > 3) {
+      std::ofstream out;
+      out.open(argv[3]);
+
+      if (!out.is_open()) {
+         std::cout << "Could not open file " << argv[3] << " for writing" << std::endl;
+         return -1;
+      }
+
+      writeLinkerScript(out, moduleName);
    }
 
    return 0;
