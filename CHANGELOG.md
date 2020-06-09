@@ -1,3 +1,7 @@
+#### wut-tools 1.2.0
+- rplimportgen: Add optional linker script generation.
+- rplexportgen: Add support for a NAME field.
+
 #### wut-tools 1.1.1
 - Buildfix from 1.1.0, no major changes.
 
