@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/devkitPro/wut-tools.svg?branch=master)](https://travis-ci.org/devkitPro/wut-tools)
+[![Build status](https://github.com/devkitPro/wut-tools/workflows/C/C++%20CI/badge.svg?branch=master)](https://github.com/devkitPro/wut-tools/actions?workflow=C%2FC%2B%2B+CI)
+
 # wut-tools
 Tools for [wut](https://github.com/devkitPro/wut).
 
