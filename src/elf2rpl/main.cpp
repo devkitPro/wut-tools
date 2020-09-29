@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <math.h>
 #include <zlib.h>
 
 constexpr auto DeflateMinSectionSize = 0x18u;
@@ -116,6 +117,11 @@ readElf(ElfFile &file, const std::string &filename)
          section.header.flags |= elf::SHF_WRITE;
       }
 
+      if (section.header.flags & elf::SHF_TLS) {
+         section.header.flags &= ~elf::SHF_TLS;
+         section.header.flags |= elf::SHF_RPL_TLS;
+      }
+
       auto pos = in.tellg();
       in.seekg(static_cast<size_t>(section.header.offset));
       section.data.resize(section.header.size);
@@ -174,6 +180,12 @@ generateFileInfoSection(ElfFile &file,
 
       if (section->header.type == elf::SHT_NOBITS) {
          size = section->header.size;
+      }
+
+      if (section->header.flags & elf::SHF_RPL_TLS) {
+         info.flags |= elf::RPL_TLS;
+         if ((1 << info.tlsAlignShift) < section->header.addralign)
+            info.tlsAlignShift = (uint16_t)log2((float)section->header.addralign);
       }
 
       if (section->header.addr >= CodeBaseAddress &&
@@ -359,6 +371,53 @@ fixRelocations(ElfFile &file)
                newRel.offset = offset + 2;
             }
 
+            break;
+         }
+
+         /*
+          * Convert R_PPC_GOT_TLSGD16/R_PPC_TLSGD into R_PPC_DTPMOD32/R_PPC_DTPREL32
+          */
+         case elf::R_PPC_TLSGD:
+         case elf::R_PPC_GOT_TLSGD16: {
+            uint32_t gotAddr = 0;
+            bool gotFound = false;
+            auto strTab = file.sections[symbolSection->header.link]->data.data();
+            for (int j = 0; j < symbolSection->data.size() / sizeof(elf::Symbol); j++) {
+               elf::Symbol symbol;
+               getSymbol(*symbolSection, j, symbol);
+               if (!strcmp(strTab + symbol.name, "_GLOBAL_OFFSET_TABLE_")) {
+                  gotFound = true;
+                  gotAddr = symbol.value;
+                  if (targetSection->name != file.sections[symbol.shndx]->name) {
+                     fmt::print("ERROR: \"_GLOBAL_OFFSET_TABLE_\" found in section \"{}\" instead of \"{}\", "
+                                "cannot fix a R_PPC_GOT_TLSGD16 relocation\n",
+                                file.sections[symbol.shndx]->name, targetSection->name);
+                     result = false;
+                  }
+                  break;
+               }
+            }
+
+            if (!gotFound) {
+               fmt::print("ERROR: Could not find symbol \"_GLOBAL_OFFSET_TABLE_\" for fixing a R_PPC_GOT_TLSGD16 relocation\n");
+               result = false;
+               break;
+            }
+
+            /* tls_index is stored in GOT as 8 bytes (DTPMOD32 + DTPREL32)
+             * GOT_TLSGD16 points to the offset of tls_index in GOT
+             * for R_PPC_TLSGD, the offset is in the previous instruction
+             */
+            be_val<int16_t> *tlsIndexOffset = (be_val<int16_t> *)(targetSection->data.data() + offset - targetSection->header.addr);
+
+            if (type == elf::R_PPC_GOT_TLSGD16) {
+               rels[i].info = (index << 8) | elf::R_PPC_DTPMOD32;
+               rels[i].offset = gotAddr + *tlsIndexOffset;
+            } else {
+               tlsIndexOffset--;
+               rels[i].info = (index << 8) | elf::R_PPC_DTPREL32;
+               rels[i].offset = gotAddr + *tlsIndexOffset + 4;
+            }
             break;
          }
 
