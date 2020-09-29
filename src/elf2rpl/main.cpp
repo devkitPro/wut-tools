@@ -112,6 +112,10 @@ readElf(ElfFile &file, const std::string &filename)
          continue;
       }
 
+      if (section.header.addr >= DataBaseAddress && section.header.addr < LoadBaseAddress) {
+         section.header.flags |= elf::SHF_WRITE;
+      }
+
       auto pos = in.tellg();
       in.seekg(static_cast<size_t>(section.header.offset));
       section.data.resize(section.header.size);
@@ -579,8 +583,8 @@ fixLoaderVirtualAddresses(ElfFile &file)
       auto &section = file.sections[i];
       if (section->header.type == elf::SHT_SYMTAB ||
           section->header.type == elf::SHT_STRTAB) {
-         relocateSection(file, *section, i,
-                         align_up(loadMax, section->header.addralign));
+         loadMax = align_up(loadMax, section->header.addralign);
+         relocateSection(file, *section, i, loadMax);
          section->header.flags |= elf::SHF_ALLOC;
          loadMax += section->data.size();
       }
