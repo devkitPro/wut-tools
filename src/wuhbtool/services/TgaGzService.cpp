@@ -93,7 +93,7 @@ namespace {
       uint8_t chunk[16*1024];
 
       z_stream z = {};
-      deflateInit(&z, Z_BEST_COMPRESSION);
+      deflateInit2(&z, Z_BEST_COMPRESSION, Z_DEFLATED, MAX_WBITS | 16, 8, Z_DEFAULT_STRATEGY);
 
       z.avail_in = size;
       z.next_in = static_cast<Bytef*>(const_cast<void*>(data));
