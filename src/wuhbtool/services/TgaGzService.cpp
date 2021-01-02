@@ -118,7 +118,7 @@ namespace {
 
 }
 
-FileEntry* createTgaGzFileEntry(const char* inputFile, int width, int height, const char* filename) {
+FileEntry* createTgaGzFileEntry(const char* inputFile, int width, int height, int bpp, const char* filename) {
    FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename(inputFile);
    if (fif == FIF_UNKNOWN || !FreeImage_FIFSupportsReading(fif)) {
       fprintf(stderr, "Unknown or unsupported image format: %s\n", inputFile);
@@ -127,8 +127,8 @@ FileEntry* createTgaGzFileEntry(const char* inputFile, int width, int height, co
 
    FIBITMAP* bmp = FreeImage_Load(fif, inputFile, 0);
 
-   if (bmp && (FreeImage_GetImageType(bmp) != FIT_BITMAP || FreeImage_GetBPP(bmp) != 24)) {
-      FIBITMAP* newbmp = FreeImage_ConvertTo24Bits(bmp);
+   if (bmp && (FreeImage_GetImageType(bmp) != FIT_BITMAP || FreeImage_GetBPP(bmp) != bpp)) {
+      FIBITMAP* newbmp = bpp == 24 ? FreeImage_ConvertTo24Bits(bmp) : FreeImage_ConvertTo32Bits(bmp);
       FreeImage_Unload(bmp);
       bmp = newbmp;
    }

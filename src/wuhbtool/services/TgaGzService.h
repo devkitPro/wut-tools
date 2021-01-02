@@ -4,4 +4,4 @@
 
 #include "../entities/FileEntry.h"
 
-FileEntry* createTgaGzFileEntry(const char* inputFile, int width, int height, const char* filename);
+FileEntry* createTgaGzFileEntry(const char* inputFile, int width, int height, int bpp, const char* filename);

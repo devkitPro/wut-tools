@@ -36,11 +36,14 @@ int main(int argc, char **argv) {
             .add_option("content",
                      description{"Path to the /content directory"},
                      value<std::string>{})
+            .add_option("icon",
+                     description{"Application icon (128x128)"},
+                     value<std::string>{})
             .add_option("tv-image",
-                     description{"Splash Screen image shown on the TV"},
+                     description{"Splash Screen image shown on the TV (1280x720)"},
                      value<std::string>{})
             .add_option("drc-image",
-               description{"Splash Screen image shown on the DRC"},
+               description{"Splash Screen image shown on the DRC (854x480)"},
                value<std::string>{});
 
       parser.default_command()
@@ -89,10 +92,21 @@ int main(int argc, char **argv) {
    auto meta = new DirectoryEntry("meta");
    auto rpx = OSFileEntry::fromPath(rpxFilePath.c_str(), "boot.rpx");
 
+   if (options.has("icon")) {
+      std::string imagePath = options.get<std::string>("icon");
+
+      FileEntry * icon = createTgaGzFileEntry(imagePath.c_str(), 128, 128, 32, "iconTex.tga.gz");
+      if(!icon){
+         return EXIT_FAILURE;
+      }
+
+      meta->addChild(icon);
+   }
+
    if (options.has("tv-image")) {
       std::string imagePath = options.get<std::string>("tv-image");
 
-      FileEntry * bootTv = createTgaGzFileEntry(imagePath.c_str(), 1280, 720, "bootTvTex.tga.gz");
+      FileEntry * bootTv = createTgaGzFileEntry(imagePath.c_str(), 1280, 720, 24, "bootTvTex.tga.gz");
       if(!bootTv){
          return EXIT_FAILURE;
       }
@@ -103,7 +117,7 @@ int main(int argc, char **argv) {
    if (options.has("drc-image")) {
       std::string imagePath = options.get<std::string>("drc-image");
 
-      FileEntry * bootDrc = createTgaGzFileEntry(imagePath.c_str(), 854, 480, "bootDrcTex.tga.gz");
+      FileEntry * bootDrc = createTgaGzFileEntry(imagePath.c_str(), 854, 480, 24, "bootDrcTex.tga.gz");
       if(!bootDrc){
          return EXIT_FAILURE;
       }
