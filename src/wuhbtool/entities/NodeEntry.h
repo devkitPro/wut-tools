@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cstdio>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "../services/RomFSStructs.h"
 
@@ -26,7 +26,7 @@ public:
     DirectoryEntry * getParent();
 
     virtual void printRecursive(int indentation) {
-        std::cout << std::string(indentation, ' ') << getName() << std::endl;
+        printf("%s%s\n", std::string(indentation, ' ').c_str(), getName().c_str());
     }
 
     virtual std::string getPath();

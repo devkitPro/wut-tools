@@ -1,7 +1,7 @@
 #include "BufferFileEntry.h"
 
 void BufferFileEntry::write(FILE *f_out, off_t base_offset) {
-    std::cout << "Writing " << getFullPath() << std::endl;
+    printf("Writing %s...\n", getFullPath().c_str());
 
     if(fseeko64(f_out, base_offset + this->offset + ROMFS_FILEPARTITION_OFS, SEEK_SET) != 0){
         fprintf(stderr, "Failed to seek!\n");

@@ -5,7 +5,7 @@
 #include "OSFileEntry.h"
 
 void OSFileEntry::write(FILE *f_out, off_t base_offset) {
-    std::cout << "Writing " << getFullPath() << std::endl;
+    printf("Writing %s...\n", getFullPath().c_str());
 
 #ifdef WIN32
     std::wstring widestr = std::wstring(this->osPath.begin(), this->osPath.end());

@@ -1,6 +1,5 @@
 #include <sys/stat.h>
 #include <cstring>
-#include <iostream>
 #include <algorithm>
 #include <excmd.h>
 
@@ -85,14 +84,14 @@ int main(int argc, char **argv) {
 
       options = parser.parse(argc, argv);
    } catch (excmd::exception &ex) {
-      std::cout << "Error parsing options: " << ex.what() << std::endl;
-      return -1;
+      fprintf(stderr, "Error parsing options: %s\n", ex.what());
+      return EXIT_FAILURE;
    }
 
    if (options.empty() || options.has("help")) {
-      std::cout << argv[0] << " <rpx> <output> [options]" << std::endl;
-      std::cout << parser.format_help(argv[0]) << std::endl;
-      return 0;
+      printf("%s <rpx-file> <output> [options]\n\n", argv[0]);
+      printf("%s\n", parser.format_help(argv[0]).c_str());
+      return EXIT_SUCCESS;
    }
 
    //disable RLE
@@ -125,7 +124,7 @@ int main(int argc, char **argv) {
 
       FileEntry * bootTv = getImageCompressed(imagePath, 1280, 720, "bootTvTex.tga.gz");
       if(!bootTv){
-         return -1;
+         return EXIT_FAILURE;
       }
 
       meta->addChild(bootTv);
@@ -136,7 +135,7 @@ int main(int argc, char **argv) {
 
       FileEntry * bootDrc = getImageCompressed(imagePath, 854, 480, "bootDrcTex.tga.gz");
       if(!bootDrc){
-         return -1;
+         return EXIT_FAILURE;
       }
 
       meta->addChild(bootDrc);
@@ -160,7 +159,7 @@ int main(int argc, char **argv) {
 
    delete root;
 
-   return 0;
+   return EXIT_SUCCESS;
 }
 
 void saveBundle(RootEntry &root, const std::string &outputFilePath) {
@@ -222,9 +221,9 @@ void saveBundle(RootEntry &root, const std::string &outputFilePath) {
    root.calculateDirOffsets(&romfs_ctx, &entry_offset);
    entry_offset = 0;
    root.calculateFileOffsets(&romfs_ctx, &entry_offset);
-   printf("Update sibling and child entries...\n");
+   printf("Updating sibling and child entries...\n");
    root.updateSiblingAndChildEntries();
-   printf("Populate data...\n");
+   printf("Populating data...\n");
    root.populate(&infos);
 
    romfs_header_t header;
@@ -260,7 +259,7 @@ void saveBundle(RootEntry &root, const std::string &outputFilePath) {
       exit(EXIT_FAILURE);
    }
 
-   std::cout << "Write header" << std::endl;
+   printf("Writing header...\n");
    if(fseeko64(f_out, base_offset, SEEK_SET) != 0){
       fprintf(stderr, "Failed to seek!\n");
       exit(EXIT_FAILURE);
@@ -269,7 +268,7 @@ void saveBundle(RootEntry &root, const std::string &outputFilePath) {
 
    root.write(f_out, base_offset);
 
-   std::cout << "Write dir_hash_table" << std::endl;
+   printf("Writing dir_hash_table...\n");
    if(fseeko64(f_out, base_offset + dir_hash_table_ofs, SEEK_SET) != 0){
       fprintf(stderr, "Failed to seek!\n");
       exit(EXIT_FAILURE);
@@ -280,21 +279,21 @@ void saveBundle(RootEntry &root, const std::string &outputFilePath) {
    }
    free(dir_hash_table);
 
-   std::cout << "Write dir_table" << std::endl;
+   printf("Writing dir_table...\n");
    if (fwrite(dir_table, 1, romfs_ctx.dir_table_size, f_out) != romfs_ctx.dir_table_size) {
       fprintf(stderr, "Failed to write dir table!\n");
       exit(EXIT_FAILURE);
    }
    free(dir_table);
 
-   std::cout << "Write file_hash_table" << std::endl;
+   printf("Writing file_hash_table...\n");
    if (fwrite(file_hash_table, 1, romfs_ctx.file_hash_table_size, f_out) != romfs_ctx.file_hash_table_size) {
       fprintf(stderr, "Failed to write file hash table!\n");
       exit(EXIT_FAILURE);
    }
    free(file_hash_table);
 
-   std::cout << "Write file_table " << std::endl;
+   printf("Writing file_table...\n");
    if (fwrite(file_table, 1, romfs_ctx.file_table_size, f_out) != romfs_ctx.file_table_size) {
       fprintf(stderr, "Failed to write file table!\n");
       exit(EXIT_FAILURE);
