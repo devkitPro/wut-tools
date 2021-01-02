@@ -3,7 +3,7 @@
 #include "DirectoryEntry.h"
 #include "../services/RomFSStructs.h"
 
-class RootEntry : public DirectoryEntry {
+class RootEntry final : public DirectoryEntry {
 public:
     explicit RootEntry() : DirectoryEntry("") {
     }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdio>
+#include <utility>
 #include <string>
 #include <vector>
 
@@ -8,13 +9,12 @@
 
 class DirectoryEntry;
 
-
 class NodeEntry {
 public:
     virtual ~NodeEntry() = default;
 
-    explicit NodeEntry(const std::string &name) {
-        this->name = name;
+    explicit NodeEntry(std::string &&name) {
+        this->name = std::move(name);
     }
 
     virtual const std::string &getName() const {

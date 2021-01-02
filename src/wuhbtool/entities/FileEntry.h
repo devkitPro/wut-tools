@@ -5,7 +5,7 @@
 
 class FileEntry : public NodeEntry {
 public:
-    explicit FileEntry(const std::string &name) : NodeEntry(name) {
+    explicit FileEntry(std::string &&name) : NodeEntry(std::move(name)) {
     }
 
     void calculateFileOffsets(romfs_ctx_t *ptr, uint32_t *entry_offset) override;

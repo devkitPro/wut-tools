@@ -2,20 +2,16 @@
 
 #include "FileEntry.h"
 
-class OSFileEntry : public FileEntry {
+class OSFileEntry final : public FileEntry {
 public:
-    OSFileEntry(const std::string &path, const std::string &name) : FileEntry(name) {
+    OSFileEntry(filepath_t &path, std::string &&name) : FileEntry(std::move(name)) {
         this->osPath = path;
-    }
-
-    std::string getOSPath() const {
-        return osPath;
     }
 
     void write(FILE *pIobuf, off_t offset) override;
 
-    static FileEntry* fromPath(const std::string& inputPath);
+    static FileEntry* fromPath(const char* inputPath, const char* filename);
 
 private:
-    std::string osPath;
+    filepath_t osPath;
 };

@@ -7,12 +7,7 @@
 void OSFileEntry::write(FILE *f_out, off_t base_offset) {
     printf("Writing %s...\n", getFullPath().c_str());
 
-#ifdef WIN32
-    std::wstring widestr = std::wstring(this->osPath.begin(), this->osPath.end());
-    FILE *f_in = os_fopen(widestr.c_str(), OS_MODE_READ);
-#else
-    FILE *f_in = os_fopen(this->osPath.c_str(), OS_MODE_READ);
-#endif
+    FILE *f_in = os_fopen(this->osPath.os_path, OS_MODE_READ);
 
     if (f_in == nullptr) {
         fprintf(stderr, "Failed to open %s!\n", getFullPath().c_str());
@@ -54,10 +49,10 @@ void OSFileEntry::write(FILE *f_out, off_t base_offset) {
     free(buffer);
 }
 
-FileEntry *OSFileEntry::fromPath(const std::string &inputPath) {
+FileEntry *OSFileEntry::fromPath(const char* inputPath, const char* filename) {
     filepath_t cur_path;
     filepath_init(&cur_path);
-    filepath_set(&cur_path, inputPath.c_str());
+    filepath_set(&cur_path, inputPath);
     os_stat64_t cur_stats;
 
     if (os_stat(cur_path.os_path, &cur_stats) == -1) {
@@ -65,16 +60,7 @@ FileEntry *OSFileEntry::fromPath(const std::string &inputPath) {
         exit(EXIT_FAILURE);
     }
 
-    std::string filename = inputPath;
-
-    // Remove directory if present.
-    // Do this before extension removal incase directory has a period character.
-    const size_t last_slash_idx = filename.find_last_of("\\/");
-    if (std::string::npos != last_slash_idx) {
-        filename.erase(0, last_slash_idx + 1);
-    }
-
-    auto res = new OSFileEntry(cur_path.char_path, filename);
+    auto res = new OSFileEntry(cur_path, filename);
     res->size = cur_stats.st_size;
 
     return res;

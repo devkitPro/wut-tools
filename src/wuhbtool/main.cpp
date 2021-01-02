@@ -27,7 +27,7 @@
 #include "stb/stb_image_resize.h"
 */
 
-DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, const std::string &name);
+DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, std::string &&name);
 
 void romfs_visit_dir(DirectoryEntry *curEntry, romfs_ctx_t *romfs_ctx);
 
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
    std::string outputPath = options.get<std::string>("output");
 
    auto meta = new DirectoryEntry("meta");
-   auto rpx = OSFileEntry::fromPath(rpxFilePath);
+   auto rpx = OSFileEntry::fromPath(rpxFilePath.c_str(), "boot.rpx");
 
    if (options.has("tv-image")) {
       std::string imagePath = options.get<std::string>("tv-image");
@@ -357,13 +357,13 @@ FileEntry * getImageCompressed(const std::string &inputFile, int width, int heig
    return nullptr;
 }
 
-DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, const std::string &name) {
+DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, std::string &&name) {
    osdirent_t *cur_dirent = nullptr;
    filepath_t cur_path;
    filepath_t cur_sum_path;
    os_stat64_t cur_stats;
 
-   auto *curDir = new DirectoryEntry(name);
+   auto *curDir = new DirectoryEntry(std::move(name));
 
    osdir_t *dir = nullptr;
    if ((dir = os_opendir(dirpath.os_path)) == nullptr) {
@@ -393,7 +393,7 @@ DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, const std::string &n
          auto directoryEntry = buildDirectoryFromPath(cur_sum_path, cur_path.char_path);
          curDir->addChild(directoryEntry);
       } else if ((cur_stats.st_mode & S_IFMT) == S_IFREG) {
-         auto fileEntry = new OSFileEntry(cur_sum_path.char_path, cur_path.char_path);
+         auto fileEntry = new OSFileEntry(cur_sum_path, cur_path.char_path);
          fileEntry->size = cur_stats.st_size;
          curDir->addChild(fileEntry);
       } else {
