@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <excmd.h>
 
-//#include "zstr/zstr.hpp"
 #include "utils/utils.h"
 
 #include "entities/OSFileEntry.h"
@@ -12,47 +11,17 @@
 #include "entities/BufferFileEntry.h"
 
 #include "services/RomFSService.h"
-
-/*
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-#include "stb/stb_image_write.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-
-#include "stb/stb_image.h"
-
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
-
-#include "stb/stb_image_resize.h"
-*/
+#include "services/TgaGzService.h"
 
 DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, std::string &&name);
 
 void romfs_visit_dir(DirectoryEntry *curEntry, romfs_ctx_t *romfs_ctx);
 
-FileEntry * getImageCompressed(const std::string &inputFile, int width, int height, const std::string &filename);
-
 void saveBundle(RootEntry &root, const std::string &outputFilePath);
 
-/*
-void writeCallback(void *context, void *data, int size) {
-   auto *stream = reinterpret_cast<std::stringstream *>(context);
-   stream->write(static_cast<const char *>(data), size);
+static void deinitializeFreeImage() {
+   FreeImage_DeInitialise();
 }
-
-void cat_stream(std::istream &is, std::ostream &os) {
-   const std::streamsize buff_size = 1 << 16;
-   char *buff = new char[buff_size];
-   while (true) {
-      is.read(buff, buff_size);
-      std::streamsize cnt = is.gcount();
-      if (cnt == 0) { break; }
-      os.write(buff, cnt);
-   }
-   delete[] buff;
-} // cat_stream
-*/
 
 int main(int argc, char **argv) {
    excmd::parser parser;
@@ -94,8 +63,9 @@ int main(int argc, char **argv) {
       return EXIT_SUCCESS;
    }
 
-   //disable RLE
-   //stbi_write_tga_with_rle = 0;
+   // Set up FreeImage
+   FreeImage_Initialise();
+   atexit(deinitializeFreeImage);
 
    auto root = new RootEntry();
 
@@ -122,7 +92,7 @@ int main(int argc, char **argv) {
    if (options.has("tv-image")) {
       std::string imagePath = options.get<std::string>("tv-image");
 
-      FileEntry * bootTv = getImageCompressed(imagePath, 1280, 720, "bootTvTex.tga.gz");
+      FileEntry * bootTv = createTgaGzFileEntry(imagePath.c_str(), 1280, 720, "bootTvTex.tga.gz");
       if(!bootTv){
          return EXIT_FAILURE;
       }
@@ -133,7 +103,7 @@ int main(int argc, char **argv) {
    if (options.has("drc-image")) {
       std::string imagePath = options.get<std::string>("drc-image");
 
-      FileEntry * bootDrc = getImageCompressed(imagePath, 854, 480, "bootDrcTex.tga.gz");
+      FileEntry * bootDrc = createTgaGzFileEntry(imagePath.c_str(), 854, 480, "bootDrcTex.tga.gz");
       if(!bootDrc){
          return EXIT_FAILURE;
       }
@@ -300,61 +270,6 @@ void saveBundle(RootEntry &root, const std::string &outputFilePath) {
    }
    free(file_table);
    fclose(f_out);
-}
-
-FileEntry * getImageCompressed(const std::string &inputFile, int width, int height, const std::string &filename) {
-   /*
-   unsigned char *input_pixels;
-   unsigned char *output_pixels;
-   int w, h;
-   int n;
-   input_pixels = stbi_load(inputFile.c_str(), &w, &h, &n, 3);
-   if (input_pixels == nullptr) {
-      std::cout << "Failed to parse input image " << inputFile.c_str() << std::endl;
-      return nullptr;
-   }
-   output_pixels = (unsigned char *) malloc(width * height * n);
-   if (output_pixels == nullptr) {
-      std::cout << "Failed to allocate memory for image resizing" << std::endl;
-      return nullptr;
-   }
-   if (!stbir_resize_uint8(input_pixels, w, h, 0, output_pixels, width, height, 0, n)) {
-      std::cout << "Failed to resize " << inputFile.c_str() << std::endl;
-      return nullptr;
-   }
-
-   free(input_pixels);
-
-   std::stringstream stream;
-
-   if (!stbi_write_tga_to_func(writeCallback, &stream, width, height, 3, output_pixels)) {
-      std::cout << "Failed to convert to tga: " << inputFile.c_str() << std::endl;
-      return nullptr;
-   }
-
-   free(output_pixels);
-
-   // add footer
-   stream.write("\0\0\0\0\0\0\0\0\x54\x52\x55\x45\x56\x49\x53\x49\x4F\x4E\x2D\x58\x46\x49\x4C\x45\x2E\0", 0x1A);
-   stream.flush();
-
-   // compress output
-   std::stringstream streamCompressed;
-   std::unique_ptr<std::ostream> os_p = std::unique_ptr<std::ostream>(new zstr::ostream(streamCompressed));
-   cat_stream(stream, *os_p);
-   os_p->flush();
-
-   // write to vector buffer
-   std::vector<uint8_t> data;
-   std::for_each(std::istreambuf_iterator<char>(streamCompressed),
-              std::istreambuf_iterator<char>(),
-              [&data](const char c) {
-                 data.push_back(c);
-              });
-
-   return new BufferFileEntry(filename, data);
-   */
-   return nullptr;
 }
 
 DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, std::string &&name) {

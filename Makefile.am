@@ -70,13 +70,15 @@ wuhbtool_SOURCES = $(excmd_files) \
 	src/wuhbtool/services/RomFSService.cpp \
 	src/wuhbtool/services/RomFSService.h \
 	src/wuhbtool/services/RomFSStructs.h \
+	src/wuhbtool/services/TgaGzService.cpp \
+	src/wuhbtool/services/TgaGzService.h \
 	src/wuhbtool/utils/filepath.cpp \
 	src/wuhbtool/utils/filepath.h \
 	src/wuhbtool/utils/types.h \
 	src/wuhbtool/utils/utils.h
 
 wuhbtool_CPPFLAGS = @ZLIB_CFLAGS@ $(common_CPPFLAGS) ${excmd_CPPFLAGS}
-wuhbtool_LDADD = @ZLIB_LIBS@
+wuhbtool_LDADD = @ZLIB_LIBS@ @FREEIMAGE_LIBS@
 
 udplogserver_SOURCES = src/udplogserver/main.cpp
 udplogserver_LDADD = @NET_LIBS@

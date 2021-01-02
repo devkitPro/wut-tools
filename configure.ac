@@ -26,6 +26,24 @@ PKG_CHECK_MODULES([ZLIB], zlib, [
   AC_DEFINE([HAVE_LIBZ], [1], [Define if using zlib.])
 ])
 
+AC_CHECK_HEADER([FreeImage.h])
+
+AC_MSG_CHECKING([for libfreeimage])
+save_LIBS="$LIBS"
+LIBS="$LIBS -lfreeimage -lstdc++ -lm"
+AC_LINK_IFELSE(
+	[AC_LANG_PROGRAM([[#include <FreeImage.h>]],
+	[[FreeImage_DeInitialise()]])],
+	[freeimage_result=yes],
+	[freeimage_result=no])
+AC_MSG_RESULT([$freeimage_result])
+LIBS="$save_LIBS"
+if test "x$freeimage_result" = "xyes"; then
+	FREEIMAGE_LIBS="-lfreeimage -lm"
+else
+	AC_MSG_ERROR(['libfreeimage' not found])
+fi
+
 NET_LIBS=""
 
 case "$host" in
@@ -39,6 +57,7 @@ CFLAGS="$CFLAGS -std=gnu99"
 
 AC_SUBST(ZLIB_CFLAGS)
 AC_SUBST(ZLIB_LIBS)
+AC_SUBST(FREEIMAGE_LIBS)
 AC_SUBST(NET_LIBS)
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
