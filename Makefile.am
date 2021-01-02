@@ -12,7 +12,7 @@ excmd_files = libraries/excmd/src/excmd_exception.h  \
 	libraries/excmd/src/excmd_value_parser.h
 
 
-bin_PROGRAMS = elf2rpl readrpl rplexportgen rplimportgen udplogserver
+bin_PROGRAMS = elf2rpl readrpl rplexportgen rplimportgen wuhbtool udplogserver
 
 noinst_LTLIBRARIES      = libfmt.la
 
@@ -52,6 +52,31 @@ rplimportgen_SOURCES = src/rplimportgen/rplimportgen.cpp
 
 rplimportgen_CPPFLAGS = @ZLIB_CFLAGS@ $(common_CPPFLAGS) ${excmd_CPPFLAGS} ${fmt_CPPFLAGS}
 rplimportgen_LDADD = @ZLIB_LIBS@
+
+wuhbtool_SOURCES = $(excmd_files) \
+	src/wuhbtool/main.cpp \
+	src/wuhbtool/entities/BufferFileEntry.cpp \
+	src/wuhbtool/entities/BufferFileEntry.h \
+	src/wuhbtool/entities/DirectoryEntry.cpp \
+	src/wuhbtool/entities/DirectoryEntry.h \
+	src/wuhbtool/entities/FileEntry.cpp \
+	src/wuhbtool/entities/FileEntry.h \
+	src/wuhbtool/entities/NodeEntry.cpp \
+	src/wuhbtool/entities/NodeEntry.h \
+	src/wuhbtool/entities/OSFileEntry.cpp \
+	src/wuhbtool/entities/OSFileEntry.h \
+	src/wuhbtool/entities/RootEntry.cpp \
+	src/wuhbtool/entities/RootEntry.h \
+	src/wuhbtool/services/RomFSService.cpp \
+	src/wuhbtool/services/RomFSService.h \
+	src/wuhbtool/services/RomFSStructs.h \
+	src/wuhbtool/utils/filepath.cpp \
+	src/wuhbtool/utils/filepath.h \
+	src/wuhbtool/utils/types.h \
+	src/wuhbtool/utils/utils.h
+
+wuhbtool_CPPFLAGS = @ZLIB_CFLAGS@ $(common_CPPFLAGS) ${excmd_CPPFLAGS}
+wuhbtool_LDADD = @ZLIB_LIBS@
 
 udplogserver_SOURCES = src/udplogserver/main.cpp
 udplogserver_LDADD = @NET_LIBS@
