@@ -19,8 +19,8 @@ void DirectoryEntry::calculateDirOffsets(romfs_ctx_t *romfs_ctx, uint32_t *entry
     }
 
     for (auto const &e : children) {
-        if (instanceof<DirectoryEntry>(e)) {
-            auto curDirEntry = dynamic_cast<DirectoryEntry *>(e);
+        if (e->isDirNode()) {
+            auto curDirEntry = static_cast<DirectoryEntry *>(e);
             curDirEntry->calculateDirOffsets(romfs_ctx, entry_offset);
         }
     }
@@ -28,12 +28,12 @@ void DirectoryEntry::calculateDirOffsets(romfs_ctx_t *romfs_ctx, uint32_t *entry
 
 void DirectoryEntry::calculateFileOffsets(romfs_ctx_t *romfs_ctx, uint32_t *entry_offset) {
     for (auto const &e : children) {
-        if (instanceof<DirectoryEntry>(e)) {
+        if (e->isDirNode()) {
             e->calculateFileOffsets(romfs_ctx, entry_offset);
         }
     }
     for (auto const &e : children) {
-        if (instanceof<FileEntry>(e)) {
+        if (e->isFileNode()) {
             e->calculateFileOffsets(romfs_ctx, entry_offset);
         }
     }
@@ -74,8 +74,8 @@ void DirectoryEntry::updateSiblingAndChildEntries() {
     FileEntry *lastChild = nullptr;
     DirectoryEntry *lastDir = nullptr;
     for (auto const &e : children) {
-        if (instanceof<DirectoryEntry>(e)) {
-            auto curDirEntry = dynamic_cast<DirectoryEntry *>(e);
+        if (e->isDirNode()) {
+            auto curDirEntry = static_cast<DirectoryEntry *>(e);
 
             if (lastDir == nullptr) {
                 this->dirChild = curDirEntry;
@@ -84,8 +84,8 @@ void DirectoryEntry::updateSiblingAndChildEntries() {
             }
             lastDir = curDirEntry;
             curDirEntry->updateSiblingAndChildEntries();
-        } else if (instanceof<FileEntry>(e)) {
-            auto curFileEntry = dynamic_cast<FileEntry *>(e);
+        } else if (e->isFileNode()) {
+            auto curFileEntry = static_cast<FileEntry *>(e);
             if (lastChild == nullptr) {
                 this->fileChild = curFileEntry;
             } else {

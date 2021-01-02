@@ -7,8 +7,3 @@ static inline constexpr T align(T offset, T alignment) {
 
     return (offset + (alignment-1)) & mask;
 }
-
-template <typename Base, typename T>
-static inline bool instanceof(const T *ptr) {
-    return dynamic_cast<const Base*>(ptr) != nullptr;
-}

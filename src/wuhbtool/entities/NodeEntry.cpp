@@ -3,8 +3,8 @@
 #include "../utils/utils.h"
 
 DirectoryEntry * NodeEntry::getParent() {
-    if (this->parent) {
-        return dynamic_cast<DirectoryEntry *>(this->parent);
+    if (this->parent && this->parent->isDirNode()) {
+        return static_cast<DirectoryEntry *>(this->parent);
     }
     return nullptr;
 }
@@ -21,5 +21,9 @@ std::string NodeEntry::getFullPath() {
 }
 
 void NodeEntry::setParent(DirectoryEntry *_parent) {
-    this->parent = dynamic_cast<NodeEntry *>(_parent);
+    if (_parent->isDirNode()) {
+        this->parent = static_cast<NodeEntry *>(_parent);
+    } else {
+        this->parent = nullptr;
+    }
 }

@@ -13,12 +13,21 @@ class NodeEntry {
 public:
     virtual ~NodeEntry() = default;
 
-    explicit NodeEntry(std::string &&name) {
+    explicit NodeEntry(std::string &&name, bool is_dir_node) {
         this->name = std::move(name);
+        this->is_dir_node = is_dir_node;
     }
 
     virtual const std::string &getName() const {
         return name;
+    }
+
+    bool isDirNode() const {
+        return is_dir_node;
+    }
+
+    bool isFileNode() const {
+        return !is_dir_node;
     }
 
     void setParent(DirectoryEntry *_parent);
@@ -48,4 +57,5 @@ public:
 private:
     NodeEntry *parent = nullptr;
     std::string name;
+    bool is_dir_node;
 };

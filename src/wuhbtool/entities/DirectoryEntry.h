@@ -13,7 +13,7 @@ public:
         children.clear();
     }
 
-    explicit DirectoryEntry(std::string &&name) : NodeEntry(std::move(name)) {
+    explicit DirectoryEntry(std::string &&name) : NodeEntry(std::move(name), true) {
 
     }
 
