@@ -36,6 +36,15 @@ int main(int argc, char **argv) {
             .add_option("content",
                      description{"Path to the /content directory"},
                      value<std::string>{})
+            .add_option("name",
+                     description{"Long name of the application"},
+                     value<std::string>{})
+            .add_option("short-name",
+                     description{"Short name of the application"},
+                     value<std::string>{})
+            .add_option("author",
+                     description{"Author of the application"},
+                     value<std::string>{})
             .add_option("icon",
                      description{"Application icon (128x128)"},
                      value<std::string>{})
@@ -123,6 +132,60 @@ int main(int argc, char **argv) {
       }
 
       meta->addChild(bootDrc);
+   }
+
+   {
+      std::string long_name = options.has("name") ? options.get<std::string>("name") : (
+         options.has("short-name") ? options.get<std::string>("short-name") : ""
+      );
+      std::string short_name = options.has("short-name") ? options.get<std::string>("short-name") : (
+         options.has("name") ? options.get<std::string>("name") : ""
+      );
+      std::string author = options.has("author") ? options.get<std::string>("author") : "Built with devkitPPC & wut";
+
+      if (long_name.empty() || short_name.empty()) {
+         size_t startpos = 0, endpos = rpxFilePath.length();
+
+         size_t slash = rpxFilePath.find_last_of('/');
+#ifdef _WIN32
+         if (slash == std::string::npos) {
+            slash = rpxFilePath.find_last_of('\\');
+         }
+#endif
+         if (slash != std::string::npos) {
+            startpos = slash+1;
+         }
+
+         size_t dot = rpxFilePath.find_last_of('.');
+         if (dot != std::string::npos) {
+            endpos = dot;
+         }
+
+         long_name = short_name = rpxFilePath.substr(startpos, endpos-startpos);
+      }
+
+#define MAKE_META_INI(_buf,_size) snprintf((_buf),(_size), \
+         "[menu]\n" \
+         "longname=%s\n" \
+         "shortname=%s\n" \
+         "author=%s\n", \
+         long_name.c_str(), \
+         short_name.c_str(), \
+         author.c_str())
+
+      std::vector<uint8_t> metaIniData;
+      metaIniData.reserve(MAKE_META_INI(NULL, 0)+1);
+      metaIniData.resize(metaIniData.capacity()-1);
+      MAKE_META_INI(reinterpret_cast<char*>(metaIniData.data()), metaIniData.capacity());
+
+#undef MAKE_META_INI
+
+      FileEntry * metaIni = new BufferFileEntry("meta.ini", std::move(metaIniData));
+      if(!metaIni){
+         return EXIT_FAILURE;
+      }
+
+      meta->addChild(metaIni);
    }
 
    if(!meta->getChildren().empty()){
