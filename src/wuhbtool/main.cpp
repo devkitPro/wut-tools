@@ -15,12 +15,18 @@
 
 DirectoryEntry *buildDirectoryFromPath(filepath_t &dirpath, std::string &&name);
 
-void romfs_visit_dir(DirectoryEntry *curEntry, romfs_ctx_t *romfs_ctx);
-
 void saveBundle(RootEntry &root, const std::string &outputFilePath);
 
 static void deinitializeFreeImage() {
    FreeImage_DeInitialise();
+}
+
+static inline void addFolderIfNotEmpty(DirectoryEntry *parent, DirectoryEntry *child) {
+   if (!child->getChildren().empty()) {
+      parent->addChild(child);
+   } else {
+      delete child;
+   }
 }
 
 int main(int argc, char **argv) {
@@ -81,7 +87,13 @@ int main(int argc, char **argv) {
 
    auto root = new RootEntry();
 
-   auto content = new DirectoryEntry("content");
+   auto codeFolder = new DirectoryEntry("code");
+   auto metaFolder = new DirectoryEntry("meta");
+   auto contentFolder = new DirectoryEntry("content");
+
+   std::string rpxFilePath = options.get<std::string>("rpx-file");
+   auto rpxFile = OSFileEntry::fromPath(rpxFilePath.c_str(), "root.rpx");
+   codeFolder->addChild(rpxFile);
 
    if (options.has("content")) {
       std::string contentPath = options.get<std::string>("content");
@@ -92,14 +104,8 @@ int main(int argc, char **argv) {
 
       DirectoryEntry * contentDir = buildDirectoryFromPath(dirpath, "content");
 
-      content->moveChildren(*contentDir);
+      contentFolder->moveChildren(*contentDir);
    }
-
-   std::string rpxFilePath = options.get<std::string>("rpx-file");
-   std::string outputPath = options.get<std::string>("output");
-
-   auto meta = new DirectoryEntry("meta");
-   auto rpx = OSFileEntry::fromPath(rpxFilePath.c_str(), "boot.rpx");
 
    if (options.has("icon")) {
       std::string imagePath = options.get<std::string>("icon");
@@ -109,7 +115,7 @@ int main(int argc, char **argv) {
          return EXIT_FAILURE;
       }
 
-      meta->addChild(icon);
+      metaFolder->addChild(icon);
    }
 
    if (options.has("tv-image")) {
@@ -120,7 +126,7 @@ int main(int argc, char **argv) {
          return EXIT_FAILURE;
       }
 
-      meta->addChild(bootTv);
+      metaFolder->addChild(bootTv);
    }
 
    if (options.has("drc-image")) {
@@ -131,7 +137,7 @@ int main(int argc, char **argv) {
          return EXIT_FAILURE;
       }
 
-      meta->addChild(bootDrc);
+      metaFolder->addChild(bootDrc);
    }
 
    {
@@ -185,23 +191,14 @@ int main(int argc, char **argv) {
          return EXIT_FAILURE;
       }
 
-      meta->addChild(metaIni);
+      metaFolder->addChild(metaIni);
    }
 
-   if(!meta->getChildren().empty()){
-      root->addChild(meta);
-   }else{
-      delete meta;
-   }
+   addFolderIfNotEmpty(root, codeFolder);
+   addFolderIfNotEmpty(root, metaFolder);
+   addFolderIfNotEmpty(root, contentFolder);
 
-   if(!content->getChildren().empty()){
-      root->addChild(content);
-   }else{
-      delete content;
-   }
-
-   root->addChild(rpx);
-
+   std::string outputPath = options.get<std::string>("output");
    saveBundle(*root, outputPath);
 
    delete root;
