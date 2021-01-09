@@ -47,14 +47,14 @@ void DirectoryEntry::updateEntryOffset(uint32_t *entry_offset) {
 }
 
 void DirectoryEntry::populate(romfs_infos_t *romfs_infos) {
-    romfs_direntry_t *cur_entry = RomFSService::romfs_get_direntry(romfs_infos->dir_table, this->entry_offset);
+    romfs_direntry_t *cur_entry = romfs::GetDirEntry(romfs_infos->dir_table, this->entry_offset);
     cur_entry->parent = be_word(this->getParent()->entry_offset);
     cur_entry->sibling = be_word(this->sibling == nullptr ? ROMFS_ENTRY_EMPTY : this->sibling->entry_offset);
     cur_entry->child = be_word(this->dirChild == nullptr ? ROMFS_ENTRY_EMPTY : this->dirChild->entry_offset);
     cur_entry->file = be_word(this->fileChild == nullptr ? ROMFS_ENTRY_EMPTY : this->fileChild->entry_offset);
 
     uint32_t name_size = getName().size();
-    uint32_t hash = RomFSService::calc_path_hash(this->getParent()->entry_offset, reinterpret_cast<const unsigned char *>(("/" + getName()).c_str()), 1, name_size);
+    uint32_t hash = romfs::CalcPathHash(this->getParent()->entry_offset, reinterpret_cast<const unsigned char *>(("/" + getName()).c_str()), 1, name_size);
 
     cur_entry->hash = romfs_infos->dir_hash_table[hash % romfs_infos->dir_hash_table_entry_count];
     romfs_infos->dir_hash_table[hash % romfs_infos->dir_hash_table_entry_count] = be_word(this->entry_offset);

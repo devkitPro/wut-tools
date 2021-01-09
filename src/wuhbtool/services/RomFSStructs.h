@@ -38,7 +38,8 @@ typedef struct {
 } romfs_ctx_t;
 
 typedef struct {
-    uint64_t header_size;
+    uint32_t header_magic;
+    uint32_t header_size;
     uint64_t dir_hash_table_ofs;
     uint64_t dir_hash_table_size;
     uint64_t dir_table_ofs;

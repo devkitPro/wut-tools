@@ -15,7 +15,7 @@ void FileEntry::calculateFileOffsets(romfs_ctx_t *romfs_ctx, uint32_t *entry_off
 }
 
 void FileEntry::populate(romfs_infos_t * romfs_infos) {
-    romfs_fentry_t *cur_entry = RomFSService::romfs_get_fentry(romfs_infos->file_table, this->entry_offset);
+    romfs_fentry_t *cur_entry = romfs::GetFileEntry(romfs_infos->file_table, this->entry_offset);
 
     cur_entry->parent = be_word(this->getParent()->entry_offset);
     cur_entry->sibling = be_word(this->sibling == nullptr ? ROMFS_ENTRY_EMPTY : this->sibling->entry_offset);
@@ -23,7 +23,7 @@ void FileEntry::populate(romfs_infos_t * romfs_infos) {
     cur_entry->size = be_dword(this->size);
 
     uint32_t name_size = getName().length();
-    uint32_t hash = RomFSService::calc_path_hash(this->getParent()->entry_offset, reinterpret_cast<const unsigned char *>(("/" + getName()).c_str()), 1, name_size);
+    uint32_t hash = romfs::CalcPathHash(this->getParent()->entry_offset, reinterpret_cast<const unsigned char *>(("/" + getName()).c_str()), 1, name_size);
     cur_entry->hash = romfs_infos->file_hash_table[hash % romfs_infos->file_hash_table_entry_count];
     romfs_infos->file_hash_table[hash % romfs_infos->file_hash_table_entry_count] = be_word(this->entry_offset);
 
