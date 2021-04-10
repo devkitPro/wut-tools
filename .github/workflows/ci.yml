@@ -23,7 +23,7 @@ jobs:
 
     - name: Install
       run: |
-        sudo apt install autoconf libtool libz-dev pkg-config
+        sudo apt install autoconf libtool libz-dev libfreeimage-dev pkg-config
 
     - name: Build
       run: |
