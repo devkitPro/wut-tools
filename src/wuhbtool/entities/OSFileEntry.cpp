@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdlib.h>
 #include "OSFileEntry.h"
 
 void OSFileEntry::write(FILE *f_out, off_t base_offset) {

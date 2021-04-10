@@ -2,6 +2,8 @@
 #include "../entities/BufferFileEntry.h"
 #include <vector>
 #include <zlib.h>
+#include <stdlib.h>
+#include <string.h>
 
 namespace {
 

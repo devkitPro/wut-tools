@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "BufferFileEntry.h"
 
 void BufferFileEntry::write(FILE *f_out, off_t base_offset) {
