@@ -156,9 +156,9 @@ readElf(ElfFile &file, const std::string &filename)
 #endif //DEBUG
 
          section->header.type = elf::SHT_NULL;
-         section->header.addr = 0;
-         section->header.offset = 0;
-         section->header.size = 0;
+         section->header.addr = 0u;
+         section->header.offset = 0u;
+         section->header.size = 0u;
          section->data.clear();
          section->index = UINT32_MAX;
          ++file.num_discarded_sections;
