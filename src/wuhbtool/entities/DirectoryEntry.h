@@ -47,7 +47,7 @@ public:
 
     void clearChildren();
 
-    void fillRomFSInformation(romfs_ctx_t *romfs_ctx);
+    void fillRomFSInformation(romfs_ctx_t *romfs_ctx) override;
 protected:
     virtual void updateEntryOffset(uint32_t *entry_offset);
 
