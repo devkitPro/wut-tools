@@ -34,7 +34,7 @@ void OSFileEntry::write(FILE *f_out, off_t base_offset) {
         }
 
         if (fread(buffer, 1, read_size, f_in) != read_size) {
-            fprintf(stderr, "Failed to read from %s!\n", this->osPath);
+            fprintf(stderr, "Failed to read from %s!\n", this->osPath.char_path);
             exit(EXIT_FAILURE);
         }
 
