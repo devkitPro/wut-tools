@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([wut-tools],[1.3.0],[https://github.com/devkitPro/wut-tools/issues])
+AC_INIT([wut-tools],[1.3.1],[https://github.com/devkitPro/wut-tools/issues])
 AC_CONFIG_SRCDIR([src/elf2rpl/main.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -26,24 +26,6 @@ PKG_CHECK_MODULES([ZLIB], zlib, [
   AC_DEFINE([HAVE_LIBZ], [1], [Define if using zlib.])
 ])
 
-AC_CHECK_HEADER([FreeImage.h])
-
-AC_MSG_CHECKING([for libfreeimage])
-save_LIBS="$LIBS"
-LIBS="$LIBS -lfreeimage -lstdc++ -lm"
-AC_LINK_IFELSE(
-	[AC_LANG_PROGRAM([[#include <FreeImage.h>]],
-	[[FreeImage_DeInitialise()]])],
-	[freeimage_result=yes],
-	[freeimage_result=no])
-AC_MSG_RESULT([$freeimage_result])
-LIBS="$save_LIBS"
-if test "x$freeimage_result" = "xyes"; then
-	FREEIMAGE_LIBS="-lfreeimage -lm"
-else
-	AC_MSG_ERROR(['libfreeimage' not found])
-fi
-
 NET_LIBS=""
 
 case "$host" in
@@ -52,6 +34,27 @@ case "$host" in
       CFLAGS="$CFLAGS -D__USE_MINGW_ANSI_STDIO"
       ;;
 esac
+
+#
+# check for libfreeimage
+#
+AC_CHECK_HEADER([FreeImage.h])
+
+AC_MSG_CHECKING([for libfreeimage])
+save_LIBS="$LIBS"
+LIBS="$LIBS -lfreeimage ${NET_LIBS} -lstdc++ -lm"
+AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([[#include <FreeImage.h>]],
+        [[FreeImage_DeInitialise()]])],
+        [freeimage_result=yes],
+        [freeimage_result=no])
+AC_MSG_RESULT([$freeimage_result])
+LIBS="$save_LIBS"
+if test "x$freeimage_result" = "xyes"; then
+        FREEIMAGE_LIBS="-lfreeimage ${NET_LIBS} -lm"
+else
+         AC_MSG_ERROR(['libfreeimage' not found])
+fi
 
 CFLAGS="$CFLAGS -std=gnu99"
 
