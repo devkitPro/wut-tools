@@ -55,6 +55,8 @@ enum SectionFlags : uint32_t // sh_flags
    SHF_WRITE = 0x1,
    SHF_ALLOC = 0x2,
    SHF_EXECINSTR = 0x4,
+   SHF_TLS = 0x0400,
+   SHF_RPL_TLS = 0x04000000,
    SHF_DEFLATED = 0x08000000,
    SHF_MASKPROC = 0xF0000000,
 };
@@ -197,6 +199,7 @@ enum RelocationType : uint32_t // r_info & 0xff
 enum RplFileInfoFlag : uint32_t
 {
    RPL_IS_RPX = 0x2,
+   RPL_TLS = 0x8,
 };
 
 static const unsigned HeaderMagic = 0x7f454c46;
