@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([wut-tools],[1.3.1],[https://github.com/devkitPro/wut-tools/issues])
+AC_INIT([wut-tools],[1.3.2],[https://github.com/devkitPro/wut-tools/issues])
 AC_CONFIG_SRCDIR([src/elf2rpl/main.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -35,14 +35,22 @@ case "$host" in
       ;;
 esac
 
-#
-# check for libfreeimage
-#
+case "$host" in
+   *-apple-darwin*)
+      STDCPP_LIBS="-lc++"
+      ;;
+
+   *)
+      STDCPP_LIBS="-lstdc++"
+      ;;
+
+esac
+
 AC_CHECK_HEADER([FreeImage.h])
 
 AC_MSG_CHECKING([for libfreeimage])
 save_LIBS="$LIBS"
-LIBS="$LIBS -lfreeimage ${NET_LIBS} -lstdc++ -lm"
+LIBS="-lfreeimage ${LIBS} ${NET_LIBS} ${STDCPP_LIBS} -lm"
 AC_LINK_IFELSE(
         [AC_LANG_PROGRAM([[#include <FreeImage.h>]],
         [[FreeImage_DeInitialise()]])],
@@ -51,7 +59,7 @@ AC_LINK_IFELSE(
 AC_MSG_RESULT([$freeimage_result])
 LIBS="$save_LIBS"
 if test "x$freeimage_result" = "xyes"; then
-        FREEIMAGE_LIBS="-lfreeimage ${NET_LIBS} -lm"
+        FREEIMAGE_LIBS="-lfreeimage ${NET_LIBS} ${STDCPP_LIBS} -lm"
 else
          AC_MSG_ERROR(['libfreeimage' not found])
 fi
