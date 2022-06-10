@@ -80,7 +80,6 @@ writeExports(std::ofstream &out,
    // Write out the strings
    for (const auto &name : exports) {
       out << ".string \"" << name << "\"" << std::endl;
-      out << ".byte 0" << std::endl;
       nameOffset += name.size() + 1;
    }
    out << std::endl;
