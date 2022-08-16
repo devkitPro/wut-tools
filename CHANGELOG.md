@@ -1,3 +1,21 @@
+#### wut-tools 1.3.3
+- rplexportgen: Fix double null-terminator byte in export names.
+
+#### wut-tools 1.3.2
+- Fix macOS freeimage detection
+
+#### wut-tools 1.3.1
+- Fix windows freeimage detection
+
+#### wut-tools 1.3.0
+elf2rpl: 
+- enforce the SHF_WRITE flag on data sections.
+- fix address calculation for SYMTAB/STRTAB relocations.
+- Automatically discard DWARF debugging sections.
+
+wuhbtool:
+- new tool
+
 #### wut-tools 1.2.0
 - rplimportgen: Add optional linker script generation.
 - rplexportgen: Add support for a NAME field.
