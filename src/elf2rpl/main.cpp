@@ -191,7 +191,7 @@ generateFileInfoSection(ElfFile &file,
    info.dataSize = 0u;
    info.dataAlign = 4096u;
    info.loadSize = 0u;
-   info.loadAlign = 4u;
+   info.loadAlign = 32u;
    info.tempSize = 0u;
    info.trampAdjust = 0u;
    info.trampAddition = 0u;
