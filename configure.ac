@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([wut-tools],[1.3.3],[https://github.com/devkitPro/wut-tools/issues])
+AC_INIT([wut-tools],[1.3.4],[https://github.com/devkitPro/wut-tools/issues])
 AC_CONFIG_SRCDIR([src/elf2rpl/main.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 

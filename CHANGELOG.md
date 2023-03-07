@@ -1,3 +1,7 @@
+#### wut-tools 1.3.4
+elf2rpl:
+- change load section alignment to 32.
+
 #### wut-tools 1.3.3
 - rplexportgen: Fix double null-terminator byte in export names.
 
