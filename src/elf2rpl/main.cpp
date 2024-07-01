@@ -717,6 +717,11 @@ calculateSectionOffsets(ElfFile &file)
    auto offset = file.header.shoff;
    offset += align_up(static_cast<uint32_t>((file.sections.size() - file.num_discarded_sections) * sizeof(elf::SectionHeader)), 64);
 
+   // Set all offsets to 0, so we can detect sections we didn't relocate
+   for (auto &section : file.sections) {
+      section->header.offset = 0u;
+   }
+
    for (auto &section : file.sections) {
       if (section->header.type == elf::SHT_NOBITS ||
           section->header.type == elf::SHT_NULL) {
@@ -825,7 +830,7 @@ calculateSectionOffsets(ElfFile &file)
       if (section->header.offset == 0 &&
           section->header.type != elf::SHT_NULL &&
           section->header.type != elf::SHT_NOBITS) {
-         fmt::print("Failed to calculate offset for section {}\n", section->index);
+         fmt::print("Failed to calculate offset for section {} ({})\n", section->name, section->index);
          return false;
       }
 
