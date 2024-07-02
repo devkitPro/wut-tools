@@ -10,11 +10,11 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          ubuntu-18.04
+          ubuntu-latest
         ]
         include:
-          - name: ubuntu-18.04
-            os: ubuntu-18.04
+          - name: ubuntu-latest
+            os: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
