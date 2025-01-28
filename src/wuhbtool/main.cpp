@@ -62,6 +62,9 @@ int main(int argc, char **argv) {
                      value<std::string>{})
             .add_option("drc-image",
                description{"Splash Screen image shown on the DRC (854x480)"},
+               value<std::string>{})
+            .add_option("boot-sound",
+               description{"Boot sound played on TV and the DRC (btsnd format)"},
                value<std::string>{});
 
       parser.default_command()
@@ -154,6 +157,10 @@ int main(int argc, char **argv) {
    addImageResource(metaFolder, "iconTex.tga.gz",     128, 128, 32, options, "icon");
    addImageResource(metaFolder, "bootTvTex.tga.gz",  1280, 720, 24, options, "tv-image");
    addImageResource(metaFolder, "bootDrcTex.tga.gz",  854, 480, 24, options, "drc-image");
+	 
+   std::string bootSoundPath = options.get<std::string>("boot-sound");
+   auto bootSoundFile = OSFileEntry::fromPath(bootSoundPath.c_str(), "bootSound.btsnd");
+   metaFolder->addChild(bootSoundFile);
 
    addFolderIfNotEmpty(root, codeFolder);
    addFolderIfNotEmpty(root, metaFolder);
